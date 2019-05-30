@@ -1,0 +1,21 @@
+{
+"type": "FeatureCollection",
+"name": "hospital",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "name": "湖北省中西医结合医院", "lon": 114.273507, "lat": 30.607725, "count": 680.0 }, "geometry": { "type": "Point", "coordinates": [ 114.273507, 30.607725 ] } },
+{ "type": "Feature", "properties": { "name": "武汉市中心医院(后湖院区)", "lon": 114.265556, "lat": 30.628411, "count": 200.0 }, "geometry": { "type": "Point", "coordinates": [ 114.265556, 30.628411 ] } },
+{ "type": "Feature", "properties": { "name": "武汉广爱医院", "lon": 114.257201, "lat": 30.634822, "count": 210.0 }, "geometry": { "type": "Point", "coordinates": [ 114.257201, 30.634822 ] } },
+{ "type": "Feature", "properties": { "name": "商职医院", "lon": 114.291691, "lat": 30.5684, "count": 500.0 }, "geometry": { "type": "Point", "coordinates": [ 114.291691, 30.5684 ] } },
+{ "type": "Feature", "properties": { "name": "武汉市红十字会医院", "lon": 114.273098, "lat": 30.614067, "count": 500.0 }, "geometry": { "type": "Point", "coordinates": [ 114.273098, 30.614067 ] } },
+{ "type": "Feature", "properties": { "name": "江汉中西医结合医院", "lon": 114.294183, "lat": 30.573756, "count": 60.0 }, "geometry": { "type": "Point", "coordinates": [ 114.294183, 30.573756 ] } },
+{ "type": "Feature", "properties": { "name": "武汉市怡和医院", "lon": 114.247403, "lat": 30.622321, "count": 50.0 }, "geometry": { "type": "Point", "coordinates": [ 114.247403, 30.622321 ] } },
+{ "type": "Feature", "properties": { "name": "武汉百姓医院", "lon": 114.248029, "lat": 30.61456, "count": 180.0 }, "geometry": { "type": "Point", "coordinates": [ 114.248029, 30.61456 ] } },
+{ "type": "Feature", "properties": { "name": "华中科技大学同济医学院附属协和医院", "lon": 114.274756, "lat": 30.58406, "count": 4800.0 }, "geometry": { "type": "Point", "coordinates": [ 114.274756, 30.58406 ] } },
+{ "type": "Feature", "properties": { "name": "民意医院", "lon": 114.278587, "lat": 30.574768, "count": 100.0 }, "geometry": { "type": "Point", "coordinates": [ 114.278587, 30.574768 ] } },
+{ "type": "Feature", "properties": { "name": "湖北省中西医结合医院民航分院", "lon": 114.23941, "lat": 30.627612, "count": 50.0 }, "geometry": { "type": "Point", "coordinates": [ 114.23941, 30.627612 ] } },
+{ "type": "Feature", "properties": { "name": "武汉中阳中医医院", "lon": 114.259167, "lat": 30.612029, "count": 200.0 }, "geometry": { "type": "Point", "coordinates": [ 114.259167, 30.612029 ] } },
+{ "type": "Feature", "properties": { "name": "武汉市优抚医院", "lon": 114.260661, "lat": 30.616058, "count": 650.0 }, "geometry": { "type": "Point", "coordinates": [ 114.260661, 30.616058 ] } },
+{ "type": "Feature", "properties": { "name": "武汉华茂医院", "lon": 114.2438, "lat": 30.61833, "count": 120.0 }, "geometry": { "type": "Point", "coordinates": [ 114.2438, 30.61833 ] } }
+]
+}
