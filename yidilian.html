@@ -1,0 +1,780 @@
+<!doctype html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+	<title>异地恋分析</title>
+	<!--高德-->
+	<link rel="stylesheet" href="https://a.amap.com/jsapi_demos/static/demo-center/css/demo-center.css" />
+	<script src="https://a.amap.com/jsapi_demos/static/demo-center/js/demoutils.js"></script>
+	<script type="text/javascript" src="https://cache.amap.com/lbs/static/addToolbar.js"></script>
+	<script type="text/javascript"
+		src="https://webapi.amap.com/maps?v=1.4.10&key=7f6974b96f8a5cb6f99476c118829de2"></script>
+	<script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+	<!--Element-->
+	<script src="https://unpkg.com/vue/dist/vue.js"></script>
+	<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+	<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+</head>
+
+<style>
+	/*地图主窗口样式*/
+	#container {
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		right: 0;
+		left: 0;
+	}
+
+	/*搜索窗口样式*/
+	#allselect {
+		position: absolute;
+		width: 290px;
+		height: 100px;
+		top: 16px;
+		right: 35px;
+	}
+
+	#select2 {
+		margin-top: 5px;
+	}
+
+	/*路径分析button*/
+	#routeapp {
+		margin-top: 20px;
+		position: absolute;
+		right: 0;
+		top: 0;
+	}
+
+	/*导航窗口样式*/
+	#drivepanel,
+	#buspanel {
+		position: fixed;
+		background-color: white;
+		max-height: 56%;
+		overflow-y: auto;
+		width: 290px;
+	}
+
+	#buspanel .amap-call,
+	#drivepanel .amap-call {
+		background-color: #009cf9;
+		border-top-left-radius: 4px;
+		border-top-right-radius: 4px;
+	}
+
+	#buspanel .amap-lib-driving,
+	#drivepanel .amap-lib-driving {
+		border-bottom-left-radius: 4px;
+		border-bottom-right-radius: 4px;
+		overflow: hidden;
+	}
+
+	/*全部字体*/
+	#allcontent {
+		font-size: 14px;
+		font-family: '微软雅黑';
+	}
+
+	/*标签页位置*/
+	#myTabContent {
+		position: fixed;
+		top: 150px;
+		right: 32px;
+		width: 292px;
+	}
+
+	/*Tab内字体*/
+	p {
+		margin-top: 0;
+		margin-bottom: 2px;
+	}
+
+	.txt {
+		color: #009CF9;
+	}
+
+	/*3button样式*/
+	.el-button {
+		margin-left: 15px;
+		margin-top: 15px;
+	}
+
+	.el-button+.el-button {
+		margin-left: 15px;
+	}
+
+	#ydl,
+	#ydl02 {
+		width: 212px;
+		margin-top: 5px;
+	}
+
+	/* 标签页宽度 */
+	.el-tabs_items {
+		padding 0 45px;
+	}
+
+	.el-tabs__nav-wrap.is-scrollable {
+    padding: 0 0;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+
+
+	.el-tabs__item {
+		font-size: 16.5px;
+		padding: 0 28px;
+	}
+
+	/*弹出框宽度*/
+	.el-popover {
+		height: 430px;
+	}
+
+
+</style>
+
+<body>
+	<div id="container"></div>
+
+	<el-button id="rtnbtn" style="position: absolute; left:4%;top:1%" type="primary" size="small" plain @click="rtn">返回上一页</el-button>
+
+	<div id="allcontent">
+		<div id="allselect">
+			<el-select id="select1" v-model="value" size="medium" filterable allow-create default-first-option
+				placeholder="请输入你的学校~">
+				<el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value">
+				</el-option>
+			</el-select>
+			<el-select id="select2" v-model="value" size="medium" filterable allow-create default-first-option
+				placeholder="请输入Ta的学校~">
+				<el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value">
+				</el-option>
+			</el-select>
+			<el-button id="routeapp" type="primary" size="small" plain @click="RouteQuery02">路径分析</el-button>
+		</div>
+
+		<div id="myTabContent" style="display: none">
+			<el-tabs type="border-card">
+				<el-tab-pane id="busdiv">
+					<span slot="label" @click="BusQuery02"> 坐车去找Ta~</span>
+					<p>两地相距&nbsp<span id="juli02" class="txt">?</span></p>
+					<p>两地的最少费用是&nbsp<span id="cost" class="txt">?</span></p>
+					<p>有这些钱，你可以吃&nbsp<span id="hotpot2" class="txt">?</span>&nbsp顿火锅</p>
+					<p>两地的最少时间是&nbsp<span id="mintime" class="txt">?</span></p>
+					<p>有这些时间，你可以打&nbsp<span id="game2" class="txt">?</span>&nbsp把游戏</p>
+					<p></p>
+
+					<el-popover offset="500" placement="bottom-end" width="315" content="buspanel" trigger="click">
+						<div id="buspanel"></div>
+						<el-button slot="reference" id="querybusapp" type="primary" size="small" plain
+							icon="el-icon-search" @click="BusRoute02">查询路线</el-button>
+					</el-popover>
+
+					<el-button id="clearrouteapp" type="primary" size="small" plain icon="el-icon-delete"
+						@click="ClearBusRoute02">清除路线</el-button>
+					<el-button id="ydl" type="primary" size="small" plain @click="open5">异地恋分析</el-button>
+				</el-tab-pane>
+
+				<el-tab-pane id="drivediv">
+					<span slot="label" @click="DriveQuery02">开车去找Ta~</span>
+					<p>两地的距离&nbsp<span id="distance" class="txt"> ?</span></p>
+					<p>两地过路费&nbsp<span id="tolls" class="txt">?</span>，油费&nbsp<span id="oil" class="txt">?</span></p>
+					<p>共计花费&nbsp<span id="allcost" class="txt">?</span></p>
+					<p>驾车最短时长&nbsp<span id="leasttime" class="txt">?</span></p>
+					<p></p>
+
+					<el-popover offset="500" width="315" content="drivepanel" trigger="click">
+						<div id="drivepanel"></div>
+						<el-button slot="reference" id="querydriveapp" type="primary" size="small" plain
+							icon="el-icon-search" @click="DriveRoute02">查询路线</el-button>
+					</el-popover>
+
+					<el-button id="clearrouteapp02" type="primary" size="small" plain icon="el-icon-delete"
+						@click="ClearDriveRoute02">清除路线</el-button>
+					<el-button id="ydl02" type="primary" size="small" plain @click="open10">异地恋分析</el-button>
+				</el-tab-pane>
+			</el-tabs>
+		</div>
+
+	</div>
+</body>
+
+<script>
+var map;
+var n;
+var m;
+var t;
+//基本地图加载
+map = new AMap.Map("container", {
+	resizeEnable: true,
+	center: [114.27, 30.60],//地图中心点
+	zoom: 5,//地图显示的缩放级别
+});
+
+new Vue({//路径分析
+	el: '#rtnbtn',
+	methods: {
+		rtn() {
+			window.location.href='index.html';
+		}
+	}
+})
+
+
+new Vue({//路径分析
+	el: '#routeapp',
+	methods: {
+		RouteQuery02() {
+			RouteQuery()
+		}
+	}
+})
+
+new Vue({//输入框A
+	el: '#select1',
+	data() {
+		return {
+			options: [{
+				value: '安徽师范大学',
+				label: '安徽师范大学'
+			}, {
+				value: '北京大学',
+				label: '北京大学'
+			}, {
+				value: '北京林业大学',
+				label: '北京林业大学'
+			}, {
+				value: '北京师范大学',
+				label: '北京师范大学'
+			}, {
+				value: '成都理工大学',
+				label: '成都理工大学'
+			}, {
+				value: '东北师范大学',
+				label: '东北师范大学'
+			}, {
+				value: '东华理工大学',
+				label: '东华理工大学'
+			}, {
+				value: '福建师范大学',
+				label: '福建师范大学'
+			}, {
+				value: '福州大学',
+				label: '福州大学'
+			}, {
+				value: '广西师范学院',
+				label: '广西师范学院'
+			}, {
+				value: '河北师范大学',
+				label: '河北师范大学'
+			}, {
+				value: '河南大学',
+				label: '河南大学'
+			}, {
+				value: '河南理工大学',
+				label: '河南理工大学'
+			}, {
+				value: '湖北大学',
+				label: '湖北大学'
+			}, {
+				value: '湖南科技大学',
+				label: '湖南科技大学'
+			}, {
+				value: '华东师范大学',
+				label: '华东师范大学'
+			}, {
+				value: '华南农业大学',
+				label: '华南农业大学'
+			}, {
+				value: '吉林大学',
+				label: '吉林大学'
+			}, {
+				value: '江西理工大学',
+				label: '江西理工大学'
+			}, {
+				value: '昆明理工大学',
+				label: '昆明理工大学'
+			}, {
+				value: '兰州大学',
+				label: '兰州大学'
+			}, {
+				value: '兰州交通大学',
+				label: '兰州交通大学'
+			}, {
+				value: '南京大学',
+				label: '南京大学'
+			}, {
+				value: '南京农业大学',
+				label: '南京农业大学'
+			}, {
+				value: '南京师范大学',
+				label: '南京师范大学'
+			}, {
+				value: '内蒙古师范大学',
+				label: '内蒙古师范大学'
+			}, {
+				value: '青海师范大学',
+				label: '青海师范大学'
+			}, {
+				value: '山东科技大学',
+				label: '山东科技大学'
+			}, {
+				value: '陕西师范大学',
+				label: '陕西师范大学'
+			}, {
+				value: '首都师范大学',
+				label: '首都师范大学'
+			}, {
+				value: '四川师范大学',
+				label: '四川师范大学'
+			}, {
+				value: '同济大学',
+				label: '同济大学'
+			}, {
+				value: '武汉大学',
+				label: '武汉大学'
+			}, {
+				value: '西安科技大学',
+				label: '西安科技大学'
+			}, {
+				value: '西北大学',
+				label: '西北大学'
+			}, {
+				value: '西南大学',
+				label: '西南大学'
+			}, {
+				value: '新疆大学',
+				label: '新疆大学'
+			}, {
+				value: '新疆师范大学',
+				label: '新疆师范大学'
+			}, {
+				value: '云南师范大学',
+				label: '云南师范大学'
+			}, {
+				value: '长安大学',
+				label: '长安大学'
+			}, {
+				value: '长江大学',
+				label: '长江大学'
+			}, {
+				value: '浙江大学',
+				label: '浙江大学'
+			}, {
+				value: '中国地质大学',
+				label: '中国地质大学'
+			}, {
+				value: '中国海洋大学',
+				label: '中国海洋大学'
+			}, {
+				value: '中国科学院大学',
+				label: '中国科学院大学'
+			}, {
+				value: '中国矿业大学',
+				label: '中国矿业大学'
+			}, {
+				value: '中国农业大学',
+				label: '中国农业大学'
+			}, {
+				value: '中南大学',
+				label: '中南大学'
+			}, {
+				value: '中山大学',
+				label: '中山大学'
+			}],
+			value: '',
+		}
+	},
+})
+
+new Vue({//输入框B
+	el: '#select2',
+	data() {
+		return {
+			options: [{
+				value: '安徽师范大学',
+				label: '安徽师范大学'
+			}, {
+				value: '北京大学',
+				label: '北京大学'
+			}, {
+				value: '北京林业大学',
+				label: '北京林业大学'
+			}, {
+				value: '北京师范大学',
+				label: '北京师范大学'
+			}, {
+				value: '成都理工大学',
+				label: '成都理工大学'
+			}, {
+				value: '东北师范大学',
+				label: '东北师范大学'
+			}, {
+				value: '东华理工大学',
+				label: '东华理工大学'
+			}, {
+				value: '福建师范大学',
+				label: '福建师范大学'
+			}, {
+				value: '福州大学',
+				label: '福州大学'
+			}, {
+				value: '广西师范学院',
+				label: '广西师范学院'
+			}, {
+				value: '河北师范大学',
+				label: '河北师范大学'
+			}, {
+				value: '河南大学',
+				label: '河南大学'
+			}, {
+				value: '河南理工大学',
+				label: '河南理工大学'
+			}, {
+				value: '湖北大学',
+				label: '湖北大学'
+			}, {
+				value: '湖南科技大学',
+				label: '湖南科技大学'
+			}, {
+				value: '华东师范大学',
+				label: '华东师范大学'
+			}, {
+				value: '华南农业大学',
+				label: '华南农业大学'
+			}, {
+				value: '吉林大学',
+				label: '吉林大学'
+			}, {
+				value: '江西理工大学',
+				label: '江西理工大学'
+			}, {
+				value: '昆明理工大学',
+				label: '昆明理工大学'
+			}, {
+				value: '兰州大学',
+				label: '兰州大学'
+			}, {
+				value: '兰州交通大学',
+				label: '兰州交通大学'
+			}, {
+				value: '南京大学',
+				label: '南京大学'
+			}, {
+				value: '南京农业大学',
+				label: '南京农业大学'
+			}, {
+				value: '南京师范大学',
+				label: '南京师范大学'
+			}, {
+				value: '内蒙古师范大学',
+				label: '内蒙古师范大学'
+			}, {
+				value: '青海师范大学',
+				label: '青海师范大学'
+			}, {
+				value: '山东科技大学',
+				label: '山东科技大学'
+			}, {
+				value: '陕西师范大学',
+				label: '陕西师范大学'
+			}, {
+				value: '首都师范大学',
+				label: '首都师范大学'
+			}, {
+				value: '四川师范大学',
+				label: '四川师范大学'
+			}, {
+				value: '同济大学',
+				label: '同济大学'
+			}, {
+				value: '武汉大学',
+				label: '武汉大学'
+			}, {
+				value: '西安科技大学',
+				label: '西安科技大学'
+			}, {
+				value: '西北大学',
+				label: '西北大学'
+			}, {
+				value: '西南大学',
+				label: '西南大学'
+			}, {
+				value: '新疆大学',
+				label: '新疆大学'
+			}, {
+				value: '新疆师范大学',
+				label: '新疆师范大学'
+			}, {
+				value: '云南师范大学',
+				label: '云南师范大学'
+			}, {
+				value: '长安大学',
+				label: '长安大学'
+			}, {
+				value: '长江大学',
+				label: '长江大学'
+			}, {
+				value: '浙江大学',
+				label: '浙江大学'
+			}, {
+				value: '中国地质大学',
+				label: '中国地质大学'
+			}, {
+				value: '中国海洋大学',
+				label: '中国海洋大学'
+			}, {
+				value: '中国科学院大学',
+				label: '中国科学院大学'
+			}, {
+				value: '中国矿业大学',
+				label: '中国矿业大学'
+			}, {
+				value: '中国农业大学',
+				label: '中国农业大学'
+			}, {
+				value: '中南大学',
+				label: '中南大学'
+			}, {
+				value: '中山大学',
+				label: '中山大学'
+			}],
+			value: '',
+		}
+	},
+})
+
+function ChangeTime(t) {//时间转换函数
+	var secondTime = t;
+	var minuteTime = 0;
+	var hourTime = 0;
+	if (secondTime > 60) {//如果秒数大于60，将秒数转换成整数 
+		minuteTime = parseInt(secondTime / 60); //获取分钟，除以60取整数，得到整数分钟 			 
+		secondTime = parseInt(secondTime % 60); //获取秒数，秒数取余，得到整数秒数			
+		if (minuteTime > 60) { //如果分钟大于60，将分钟转换成小时 				
+			hourTime = parseInt(minuteTime / 60); //获取小时，获取分钟除以60，得到整数小时				
+			minuteTime = parseInt(minuteTime % 60); //获取小时后取余的分，获取分钟除以60取余的分 
+		}
+	}
+	var abc = "" + parseInt(secondTime) + "秒";
+	if (minuteTime > 0) {
+		abc = "" + parseInt(minuteTime) + "分" + abc;
+	}
+	if (hourTime > 0) {
+		abc = "" + parseInt(hourTime) + "小时" + abc;
+	}
+	return abc;
+}
+
+function ClearRoute() {//button清除路线
+	map.clearMap();
+	document.getElementById("buspanel").innerHTML = '';
+	document.getElementById("drivepanel").innerHTML = '';
+}
+
+function RouteQuery() {//大button路径分析
+	var money = document.getElementById("cost");
+	var time = document.getElementById("mintime");
+	var hotpot = document.getElementById("hotpot2");
+	var game = document.getElementById('game2');
+	var juli = document.getElementById('juli02');
+
+	map.plugin(["AMap.Transfer"], function () {
+		var transOptions = {
+			city: '侯马市',
+			policy: AMap.TransferPolicy.LEAST_TIME, //乘车策略
+		};
+		var transfer = new AMap.Transfer(transOptions);//构造公交换乘类
+
+		//清除导航路线
+		if (transOptions)
+			document.getElementById("myTabContent").style.display = 'block';//打开
+		ClearRoute()
+
+		//获取起点终点
+		var a = document.getElementById("select1");
+		var b = document.getElementById("select2");
+		//根据起、终点名称查询公交换乘路线
+		transfer.search([
+			{ keyword: a.value },
+			{ keyword: b.value }
+		], function (status, result) {// result即是对应的公交路线数据信息，相关数据结构文档请参考  https://lbs.amap.com/api/javascript-api/reference/route-search#m_TransferResult
+			console.log(result);
+			//获取最少的钱,最少的时间
+			n = 99999; var tmax = 999999999;
+			for (var i = 0; i < result.plans.length; i++) {
+				var t = result.plans[i].time;
+				var m = result.plans[i].cost;
+				if (m < n) n = m;
+				if (t < tmax) tmax = t;
+			}
+			var d = result.plans[0].distance;
+			juli.innerText = d / 1000 + "Km";
+			abc = ChangeTime(tmax);
+			money.innerText = n + "元";
+			time.innerText = abc;
+			hotpot.innerText = Math.round(n / 65);
+			game.innerText = Math.round(tmax / 2100);
+		});
+	});
+}
+
+function BusQuery() {//tab公交
+	ClearRoute()
+}
+
+function BusRoute() {//button公交
+	map.plugin(["AMap.Transfer"], function () {
+		var transOptions = {
+			map: map,
+			city: '侯马市',
+			panel: 'buspanel',
+			policy: AMap.TransferPolicy.LEAST_TIME, //乘车策略
+		};
+		var transfer = new AMap.Transfer(transOptions);//构造公交换乘类
+		//清除导航路线
+		if (transOptions) ClearRoute()
+		//获取起点终点
+		var a = document.getElementById("select1").value;
+		var b = document.getElementById("select2").value;
+		//根据起、终点名称查询公交换乘路线
+		transfer.search([
+			{ keyword: a }, { keyword: b }
+		], function (status, result) {
+			if (status === 'complete') {
+				log.success('绘制公交路线完成')
+			} else {
+				log.error('公交路线数据查询失败' + result)
+			}
+		});
+	});
+}
+
+function DriveQuery() {//tab驾车
+	var distance = document.getElementById("distance");
+	var tolls = document.getElementById("tolls");
+	var oil = document.getElementById("oil");
+	var money = document.getElementById("allcost");
+	var time = document.getElementById("leasttime");
+
+	//构造路线导航类
+	map.plugin(["AMap.Driving"], function () {
+		var driving = new AMap.Driving({
+			policy: AMap.DrivingPolicy.LEAST_TIME,
+		});
+		//清除导航路线
+		if (driving) ClearRoute()
+		//获取起点终点
+		var a = document.getElementById("select1").value;
+		var b = document.getElementById("select2").value;
+		console.log(a);
+		//根据起终点名称规划驾车导航路线
+		driving.search([
+			{ keyword: a },
+			{ keyword: b }
+		], function (status, result) {// result 即是对应的驾车导航信息，相关数据结构文档请参考  https://lbs.amap.com/api/javascript-api/reference/route-search#m_DrivingResult
+			console.log(result);
+			//数据获取
+			var abc = ChangeTime(result.routes[0].time);
+
+			distance.innerText = result.routes[0].distance / 1000 + "公里";
+			tolls.innerText = result.routes[0].tolls + "元";
+			oil.innerText = Math.round(result.routes[0].distance / 2000) + "元";
+			m = Math.round(result.routes[0].tolls + result.routes[0].distance / 2000);
+			money.innerText = m + "元";
+			time.innerText = abc;
+		});
+	});
+}
+
+function DriveRoute() {//button驾车
+	//构造路线导航类
+	map.plugin(["AMap.Driving"], function () {
+		var driving = new AMap.Driving({
+			map: map,
+			panel: "drivepanel",
+			policy: AMap.DrivingPolicy.LEAST_TIME,
+		});
+
+		//清除导航路线
+		if (driving) ClearRoute()
+
+		//获取起点终点
+		var a = document.getElementById("select1").value;
+		var b = document.getElementById("select2").value;
+		//根据起终点名称规划驾车导航路线
+		driving.search([
+			{ keyword: a },
+			{ keyword: b }
+		], function (status, result) {
+			if (status === 'complete') {
+				log.success('绘制驾车路线完成')
+			} else {
+				log.error('获取驾车数据失败：' + result)
+			}
+		});
+	});
+}
+
+new Vue({//Tab框
+	el: '#myTabContent',
+	methods: {
+		BusRoute02() {
+			BusRoute()
+		},
+		ClearBusRoute02() {
+			ClearRoute()
+		},
+		DriveQuery02() {
+			DriveQuery()
+		},
+		BusQuery02() {
+			BusQuery()
+		},
+		DriveRoute02() {
+			DriveRoute()
+		},
+		ClearDriveRoute02() {
+			ClearRoute()
+		},
+		open5() {
+			if (n < 300 && t < 18000) {
+				this.$alert('距离合适，可以经常见面，祝你们99呀~', '给个小建议~', {
+					dangerouslyUseHTMLString: true
+				});
+
+			} else {
+				this.$alert('emmmmm距离太远，考（fen）虑（shou）考（ling）虑（zhao）叭', '给个小建议~', {
+					dangerouslyUseHTMLString: true
+				});
+
+			}
+
+		},
+		open10() {
+			if (m < 500) {
+				this.$alert('距离合适，但是你有车吗？？？', '给个小建议~', {
+					dangerouslyUseHTMLString: true
+				});
+
+			} else {
+				this.$alert('emmmmm花费太多，而且你有车吗？？？', '给个小建议~', {
+					dangerouslyUseHTMLString: true
+				});
+
+			}
+
+		}
+	}
+})
+
+</script>
+
+</html>
