@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
-    <title>Intro to MapView - Create a 2D map - 4.11</title>
+    <title>GIS Schools</title>
     <style>
         html,
         body,
@@ -144,9 +144,13 @@
 
     <div id="test" data-am-widget="slider" class="am-slider am-slider-c2" data-am-slider='{slideshow:false}'>
         <ul class="am-slides">
+	    <li>
+                <img src="openstreetmap.png" id="osm">
+                <div class="am-slider-desc">openstreetmap</div>
+            </li>
             <li>
                 <img src="streets.png" id="streets">
-                <div class="am-slider-desc">gray-vector</div>
+                <div class="am-slider-desc">streets</div>
             </li>
             <li>
                 <img src="streets-night-vector.png" id="night">
@@ -154,10 +158,6 @@
             </li>
             <li>
                 <img src="gray-vector.png" id="gray">
-                <div class="am-slider-desc">gray-vector</div>
-            </li>
-            <li>
-                <img src="openstreetmap.png" id="osm">
                 <div class="am-slider-desc">gray-vector</div>
             </li>
         </ul>
@@ -246,7 +246,7 @@
                 var qnum = 0
                 var cnum = 0
                 var map = new Map({
-                    basemap: "streets"
+                    basemap: "osm"
                 });
 
                 var view = new MapView({
